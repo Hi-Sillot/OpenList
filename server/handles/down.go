@@ -20,6 +20,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	log "github.com/sirupsen/logrus"
 	"github.com/yuin/goldmark"
+
+	"github.com/Soltus/encv-go/pkg/encv/plugins"
 )
 
 func Down(c *gin.Context) {
@@ -50,6 +52,34 @@ func Down(c *gin.Context) {
 
 func Proxy(c *gin.Context) {
 	rawPath := c.Request.Context().Value(conf.PathKey).(string)
+	// 【核心注入】首先，通过 fs.Get 获取文件对象，这适用于所有存储类型
+	obj, err := fs.Get(c.Request.Context(), rawPath, &fs.GetArgs{})
+	if err != nil {
+		common.ErrorPage(c, err, 500)
+		return
+	}
+
+	// 检查文件名扩展名是否为 ENCV 类型
+	// 这比检查物理路径更通用，适用于远程存储
+	if plugins.IsContainer(obj.GetName()) {
+		// 如果是 ENCV 文件，获取它的 Link，第二个参数和上面 fs.Get 返回的 obj 是等价的
+		link, _, err := fs.Link(c.Request.Context(), rawPath, model.LinkArgs{
+			Header: c.Request.Header,
+			Type:   c.Query("type"),
+		})
+		if err != nil {
+			common.ErrorPage(c, err, 500)
+			return
+		}
+		// fmt.Printf("name: %s link.URL = %s  file.GetPath(): %s rawPath: %s", obj.GetName(), link.URL, obj.GetPath(), rawPath)
+		// 调用我们新的、基于 Link 的解密函数
+		handleEncvPreviewFromLink(c, link, obj)
+		return // 关键：直接返回，不再执行后续的代理逻辑
+	}
+
+	// 【原有逻辑】如果不是 ENCV 文件，继续执行 OpenList 原有的代码
+	// 注意：我们上面已经调用了 fs.Get，为了性能，可以重构一下
+	// 但为了清晰，我们暂时保留原有逻辑，让它再调用一次
 	filename := stdpath.Base(rawPath)
 	storage, err := fs.GetStorage(rawPath, &fs.GetStoragesArgs{})
 	if err != nil {

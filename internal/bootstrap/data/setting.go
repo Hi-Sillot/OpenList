@@ -255,5 +255,6 @@ func InitialSettings() []model.SettingItem {
 			{Key: "test_help", Type: conf.TypeString, Help: "this is a help message"},
 		}...)
 	}
+	initialSettingItems = extendInitialSettings(initialSettingItems) // 注入自定义设置项
 	return initialSettingItems
 }

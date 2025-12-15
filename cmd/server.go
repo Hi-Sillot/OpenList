@@ -29,6 +29,9 @@ import (
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/quic-go/quic-go/http3"
+
+	"github.com/OpenListTeam/OpenList/v4/internal/encv"
+	encvPlugins "github.com/Soltus/encv-go/pkg/encv/plugins"
 )
 
 // ServerCmd represents the server command
@@ -39,6 +42,21 @@ var ServerCmd = &cobra.Command{
 the address is defined in config file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		Init()
+
+		// Init() 函数内部会调用 extendInitialSettings，从而完成动态注册
+		// 所以我们不再需要手动调用 InitENCVSettings()
+
+		// 1. 从 OpenList 设置中加载配置并初始化插件
+		log.Println("Initializing ENCV plugins with loaded settings...")
+		userSettings, err := encv.LoadENCVPluginSettings()
+		if err != nil {
+			log.Fatalf("Failed to load ENCV plugin settings: %v", err)
+		}
+		if err := encvPlugins.InitializeWithSettings(userSettings); err != nil {
+			log.Fatalf("Failed to initialize ENCV plugins: %v", err)
+		}
+		log.Println("ENCV plugins initialized successfully.")
+
 		if conf.Conf.DelayedStart != 0 {
 			utils.Log.Infof("delayed start for %d seconds", conf.Conf.DelayedStart)
 			time.Sleep(time.Duration(conf.Conf.DelayedStart) * time.Second)

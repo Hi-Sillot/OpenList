@@ -60,6 +60,13 @@ const (
 	HandleHookRateLimit     = "handle_hook_rate_limit"
 	IgnoreSystemFiles       = "ignore_system_files"
 
+	// Soltus/encv-go config
+	EncvDecryptPassword = "encv_decrypt_password"
+	EncvTextExt         = "encv_text_ext"
+	EncvAudioExt        = "encv_audio_ext"
+	EncvVideoExt        = "encv_video_ext"
+	EncvImageExt        = "encv_image_ext"
+
 	// index
 	SearchIndex     = "search_index"
 	AutoUpdateIndex = "auto_update_index"
