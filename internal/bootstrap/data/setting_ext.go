@@ -15,6 +15,10 @@ func extendInitialSettings(items []model.SettingItem) []model.SettingItem {
 	// 注入预览配置
 	for i, item := range items {
 		switch item.Key {
+		case conf.CustomizeHead:
+			items[i].Value = CustomizeHeadContent
+		case conf.CustomizeBody:
+			items[i].Value = CustomizeBodyContent
 		case conf.TextTypes:
 			items[i].Value += ",sccgt"
 		case conf.AudioTypes:

@@ -1,0 +1,75 @@
+<!--延迟加载-->
+<!--如果要写自定义内容建议都加到这个延迟加载的范围内-->
+<div id="customize" style="display: none;">
+  <div>
+
+  </div>
+
+  <!--延迟加载范围到这里结束-->
+</div>
+<!--延迟加载配套使用JS-->
+<script>
+  let interval = setInterval(() => {
+    if (document.querySelector(".footer")) {
+      document.querySelector("#customize").style.display = "";
+      clearInterval(interval);
+    }
+  }, 50);
+</script>
+
+
+<!-- 增加底部文字 -->
+<div style="text-align: center ; ">
+  <p align="center">
+    &copy; Powered by <a target="_blank" href="https://doc.oplist.org/" class="footer_link">OpenList</a>
+    <span>|</span>
+    <a target="_blank" href="https://github.com/Hi-Windom" class="footer_link">海文东-汐洛-怡念汐拂</a>
+    <span>|</span>
+    <a target="_blank" href="/@manage" class="footer_link">管理</a>
+  </p>
+</div>
+
+<!-- 方案一：使用 rel="preload" 的现代方案，实测速度更快（与使用 print media hack 实现非阻塞加载对比） -->
+<script>
+(function() {
+    // 预加载并应用 CSS
+    function preloadAndApplyCSS(href) {
+        var preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'style';
+        preloadLink.href = href;
+        preloadLink.onload = function() {
+            // 预加载完成后，创建真正的 stylesheet link
+            this.onload = null; // 清除 onload 事件，避免内存泄漏
+            var styleLink = document.createElement('link');
+            styleLink.rel = 'stylesheet';
+            styleLink.href = href;
+            document.head.appendChild(styleLink);
+        };
+        document.head.appendChild(preloadLink);
+    }
+
+    // 预加载并执行 JS
+    function preloadAndExecuteJS(src) {
+        var preloadScript = document.createElement('link');
+        preloadScript.rel = 'preload';
+        preloadScript.as = 'script';
+        preloadScript.href = src;
+        preloadScript.onload = function() {
+            this.onload = null;
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            document.head.appendChild(script);
+        };
+        document.head.appendChild(preloadScript);
+    }
+
+    // 按顺序加载资源
+    preloadAndApplyCSS('https://fonts.loli.net/css?family=Source+Code+Pro') ;
+    preloadAndApplyCSS('https://fonts.loli.net/css?family=Noto+Serif+SC') ;
+    preloadAndExecuteJS('https://polyfill.io/v3/polyfill.min.js?features=String.prototype.replaceAll') ;
+
+})();
+</script>
+
